@@ -6,12 +6,12 @@ import time
 import subprocess
 import ast
 
-THREADS = multiprocessing.Value("i", 0)
+CURRTHREADS = multiprocessing.Value("i", 0)
 LIMIT = 5
 
 def init_preps():
     """Function to initiate the Download Process"""
-    global THREADS
+    global CURRTHREADS
     cwd = os.getcwd() + "/"
     os.chdir(cwd)
     print("Recommended URL-Format would be: http://proxer.me/info/277/\n")
@@ -41,12 +41,12 @@ def init_preps():
 
     for iterator in range(firstepisode, lastepisode + 1):
         episodeurl = inputurl + str(iterator) + "/engsub"
-        time.sleep(5)
         print("Creating Worker-Process for Episode " + str(iterator))
-        THREADS.value = THREADS.value + 1
-        worker = multiprocessing.Process(target=retrieve_source, args=(str(episodeurl), str(name), int(iterator), THREADS), daemon=False)
+        CURRTHREADS.value = CURRTHREADS.value + 1
+        worker = multiprocessing.Process(target=retrieve_source, args=(str(episodeurl), str(name), int(iterator), CURRTHREADS), daemon=False)
         worker.start()
-        while THREADS.value == LIMIT:
+        time.sleep(5)
+        while CURRTHREADS.value == LIMIT:
             time.sleep(1)
 
 def get_file(srcfile, srcurl):
@@ -57,7 +57,7 @@ def get_file(srcfile, srcurl):
         os.chmod(srcfile, 0o666)
     return
 
-def retrieve_source(episodeurl, name, iterator, THREADS):
+def retrieve_source(episodeurl, name, iterator, CURRTHREADS):
     """Function to make all the Magic happen"""
     streamhosterlist = []
     episodesrc = os.getcwd() + "/Episode_" + str(iterator) + "-SRC.html"
@@ -91,7 +91,7 @@ def retrieve_source(episodeurl, name, iterator, THREADS):
         better.start()
         while better.is_alive():
             time.sleep(1)
-    THREADS.value = THREADS.value - 1
+    CURRTHREADS.value = CURRTHREADS.value - 1
     return
 
 def main():
