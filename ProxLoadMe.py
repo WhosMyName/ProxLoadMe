@@ -1,11 +1,17 @@
+"""Script to Download Anime Episodes from Proxer.me"""
 import os
-import multiprocessing
 import threading
+import multiprocessing
 import time
 import subprocess
 import ast
 
+THREADS = multiprocessing.Value("i", 0)
+LIMIT = 5
+
 def init_preps():
+    """Function to initiate the Download Process"""
+    global THREADS
     cwd = os.getcwd() + "/"
     os.chdir(cwd)
     print("Recommended URL-Format would be: http://proxer.me/info/277/\n")
@@ -35,20 +41,27 @@ def init_preps():
 
     for iterator in range(firstepisode, lastepisode + 1):
         episodeurl = inputurl + str(iterator) + "/engsub"
+        time.sleep(5)
         print("Creating Worker-Process for Episode " + str(iterator))
-        worker = multiprocessing.Process(target=retrieve_source, args=(str(episodeurl), str(name), int(iterator)), daemon=False)
+        THREADS.value = THREADS.value + 1
+        worker = multiprocessing.Process(target=retrieve_source, args=(str(episodeurl), str(name), int(iterator), THREADS), daemon=False)
         worker.start()
+        while THREADS.value == LIMIT:
+            time.sleep(1)
 
 def get_file(srcfile, srcurl):
+    """Function to Download"""
+    time.sleep(5)
     if not os.path.isfile(srcfile):
         subprocess.check_call(["wget", "-t", "5", "-q", "-O", srcfile, srcurl])
         os.chmod(srcfile, 0o666)
     return
 
-def retrieve_source(episodeurl, name, iterator):
+def retrieve_source(episodeurl, name, iterator, THREADS):
+    """Function to make all the Magic happen"""
     streamhosterlist = []
     episodesrc = os.getcwd() + "/Episode_" + str(iterator) + "-SRC.html"
-    getter = threading.Thread(target=get_file, args=(str(episodesrc), str(episodeurl)), daemon=True)
+    getter = threading.Thread(target=get_file, args=(str(episodesrc), str(episodeurl)), daemon=False)
     getter.start()
     while getter.is_alive():
         time.sleep(1)
@@ -61,7 +74,7 @@ def retrieve_source(episodeurl, name, iterator):
 
     streamsrcurl = streamhosterlist.pop(8).replace("\\", "").replace("#", streamhosterlist.pop(0))
     streamsrcfile = os.getcwd() + "/Stream_" + str(iterator) + "-SRC.html"
-    setter = threading.Thread(target=get_file, args=(str(streamsrcfile), str(streamsrcurl)), daemon=True)
+    setter = threading.Thread(target=get_file, args=(str(streamsrcfile), str(streamsrcurl)), daemon=False)
     setter.start()
     while setter.is_alive():
         time.sleep(1)
@@ -73,12 +86,16 @@ def retrieve_source(episodeurl, name, iterator):
     os.remove(streamsrcfile)
 
     episode = os.getcwd() + "/" + str(name) + "_Episode_" + str(iterator) + ".mp4"
-    better = threading.Thread(target=get_file, args=(str(episode), str(streamurl)), daemon=True)
-    better.start()
-    while better.is_alive():
-        time.sleep(1)
+    if not os.path.isfile(episode):
+        better = threading.Thread(target=get_file, args=(str(episode), str(streamurl)), daemon=False)
+        better.start()
+        while better.is_alive():
+            time.sleep(1)
+    THREADS.value = THREADS.value - 1
+    return
 
 def main():
+    """MAIN"""
     os.umask(0)
     init_preps()
 main()
