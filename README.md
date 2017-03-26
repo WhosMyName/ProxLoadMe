@@ -9,15 +9,12 @@ ProxLoadMe was created for those people:
 ### Requirements \*nix
 
 * Install Python3 via your package manager
-* Install wget via your package manager (you should seriously have this pre-installed)
 * Download or Clone this Repo
 
 ### Requirements Windows
 
 * Download and Install Python3 from [Python Downloadpage](https://www.python.org/downloads/release/python-360/)  
 add Python3 to PATH during installation and disable Path-Limit
-* Download wget from [Wget Downloadpage](https://eternallybored.org/misc/wget/)  
-Unpack the downloaded Archive and move Content to SysWoW64 and System32
 * Download or Clone this Repo
 
 ## How to use
@@ -47,7 +44,7 @@ Execute the Shell Scripts:
 >**Note:** *I added time.sleep(5) to prevent the Script from triggering the Chaptcha Mechanism/Bot Detection.  
 If you face wierd output somewhat like :  
 ```IndexError: pop from empty list```,  
-please open any Anime Episode on Proxer and solve the Chaptch*
+please open any Anime Episode on Proxer and solve the Chaptcha*
 
 >**Note:** *Additionally I might have added a Download-Limit of 5 to prevent the Script from downloading all Episodes in parallel.  
 This Feature can be disabled by changing the Value of LIMIT to some Value fitting for your use.*
