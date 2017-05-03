@@ -20,18 +20,13 @@ add Python3 to PATH during installation and disable Path-Limit
 ## How to use
 
 ### \*nix
-Open Directory in Terminal
-Execute the Shell Scripts:
-* run_proxload.sh -> Recommended
 * open Terminal, cd to Script-Path, python3 ProxLoadMe.py
 
 >*Exit via Ctrl + C*
 
 ### Windows
-Either open Directory in CMD and execute python ProxLoadMe.py or
-Execute the Shell Scripts:
-* run_proxload.bat -> Recommended
-* open Terminal, cd to Script-Path, python3 ProxLoadMe.py
+Either open Directory in CMD and execute python ProxLoadMe.py or double-click to open:
+* open Terminal, cd to Script-Path, python ProxLoadMe.py
 
 >*Exit via Ctrl + C*
 
@@ -40,6 +35,20 @@ Execute the Shell Scripts:
 * It will take your Input, parse it and download all relevant Files from Proxer
 * After parsing those Files, it will poroceed to download the Videofiles
 * It will quit automatically or you can, if you want stop it midway using *Ctrl + C*
+
+### Supported Video-Hoster
+* Proxer
+* Streamcloud
+* Bidvid
+* MP4Upload
+* Auroravid
+
+### Not Supported Video-Hoster
+* Viewster
+
+>**Note:** *I might not/never support Viewster, based on me not wanting to add livestreamer as dependency for ProxLoadMe to work.  
+If additional Sites require livestreamer, I might include it.*
+#
 
 >**Note:** *I added time.sleep(5) to prevent the Script from triggering the Chaptcha Mechanism/Bot Detection.  
 If you face wierd output somewhat like :  
