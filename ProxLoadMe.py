@@ -165,7 +165,7 @@ def parse_file(hoster, name, currthreads, iterator):
                     currthreads.value = currthreads.value - 1
                     autocleanse(streamsrcfile)
                     if status:
-                        return 10
+                        return 0
                     else:
                         return 1
         elif "mp4upload" in hoster:
@@ -173,39 +173,39 @@ def parse_file(hoster, name, currthreads, iterator):
                 if "\"file\":" and ".mp4\"" in line:
                     print("iuuzttr", line)
                     streamurl = str(line.split("\"file\": ")[1].replace("\"", "").strip(","))
-                    episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + "2.mp4"
+                    episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + ".mp4"
                     print("Streamurl:", streamurl)
                     status = get_file(str(episode), streamurl, 0, 1)
                     currthreads.value = currthreads.value - 1
                     autocleanse(streamsrcfile)
                     if status:
-                        return 10
+                        return 0
                     else:
                         return 1
         elif "auroravid" in hoster:
             for line in ssrc:
                 if "type=\'video/x-flv\'>" in line:
                     streamurl = str(line.split("\" type=\'video/x-flv\'>")[0].split("\"")[1])
-                    episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + "3.mp4"
+                    episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + ".mp4"
                     print("Streamurl:", streamurl)
                     status = get_file(str(episode), streamurl, 0, 1)
                     currthreads.value = currthreads.value - 1
                     autocleanse(streamsrcfile)
                     if status:
-                        return 10
+                        return 0
                     else:
                         return 1
         elif "bitvid" in hoster:
             for line in ssrc:
                 if "type=\'video/x-flv\'>" in line:
                     streamurl = str(line.split("\" type=\'video/x-flv\'>")[0].split("\"")[1])
-                    episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + "4.flv"
+                    episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + ".flv"
                     print("Streamurl:", streamurl)
                     status = get_file(str(episode), streamurl, 0, 1)
                     currthreads.value = currthreads.value - 1
                     autocleanse(streamsrcfile)
                     if status:
-                        return 10
+                        return 0
                     else:
                         return 1
         elif "streamcloud" in hoster:
@@ -224,7 +224,7 @@ def parse_file(hoster, name, currthreads, iterator):
                     line = str(line)
                     if "file:" in line:
                         streamurl = str(line.split("file: \"")[1].split("\"")[0])
-                        episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + "5.mp4"
+                        episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + ".mp4"
                         print("Streamurl:", streamurl)
                         status = get_file(str(episode), streamurl, 0, 1)
                         currthreads.value = currthreads.value - 1
