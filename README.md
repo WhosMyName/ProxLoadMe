@@ -59,5 +59,5 @@ please open any Anime Episode on Proxer and solve the Chaptcha*
 This Feature can be disabled by changing the Value of LIMIT to some Value fitting for your use.*
 
 ```python
-LIMIT = 5 <-------------- YourValueHere
+LIMIT = 5 #<-------------- YourValueHere
 ```
