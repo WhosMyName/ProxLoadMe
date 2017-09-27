@@ -36,12 +36,16 @@ def log(messagelist):
 
 def get_file(srcfile, srcurl, counter=0, ftype=0):#ftype indicates if video or not
     """Function to Downloadad and verify downloaded Files"""
+    if counter == 5:
+        print("Could not download File:", srcfile, "in 5 attempts")
+        return 1
     counter = counter + 1
     if not os.path.isfile(srcfile):
         time.sleep(5)
         print("Downloading", srcurl, "as", srcfile)
         with open(srcfile, "wb") as fifo:#open in binary write mode
             response = requests.get(srcurl, headers=HEADERS)#get request
+            print("\n\n\n", response.headers,"\n\n\n") # check against actual filesize
             fifo.write(response.content)#write to file
         if int(str(os.path.getsize(srcfile)).strip("L")) < 25000000 and ftype: #Assumes Error in Download and redownlads File
             print("Redownloading", srcurl, "as", srcfile)
@@ -106,7 +110,7 @@ def init_preps():
     with open(infofile, "r", encoding="UTF-8") as ifile:
         for line in ifile:
             if "<title>" in line and "Just a moment" not in line:
-                name = line.split(" - ")[0].strip("<title>").replace("?", "").replace("'", "").replace("!", "")
+                name = line.split(" - ")[0].strip("<title>").replace("?", "").replace("'", "").replace("!", "").replace(":", " -")
     if name == None:
         log(["Could not parse Anime-Name"])
         name = aninum
@@ -208,7 +212,7 @@ def parse_file(hoster, name, currthreads, iterator):
                     print("Streamurl:", streamurl)
                     status = get_file(str(episode), streamurl, 0, 1)
                     autocleanse(streamsrcfile)
-                    if status == 0:
+                    if status == 0: # Change all to return status for final release
                         return 0#0
                     else:
                         return 1
@@ -298,7 +302,7 @@ def parse_file(hoster, name, currthreads, iterator):
                         print("Streamurl:", streamurl)
                         status = get_file(str(episode), streamurl, 0, 1)
                         autocleanse(streamsrcfile)
-                        if status == 0:
+                        return status == 0:
                             return 0
                         else:
                             return 1
