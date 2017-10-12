@@ -13,7 +13,7 @@ from selenium import webdriver
 #SEARCH FOR # TO FIND ALL COMMENTS
 
 CURRTHREADS = multiprocessing.Value("i", 0)
-LIMIT = 5
+LIMIT = 3
 HEADERS = requests.utils.default_headers()
 HEADERS.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36",})
 SUPPORTEDHOSTER = ["proxer", "streamcloud", "mp4upload", "bitvid", "auroravid"]
@@ -302,7 +302,7 @@ def parse_file(hoster, name, currthreads, iterator):
                         print("Streamurl:", streamurl)
                         status = get_file(str(episode), streamurl, 0, 1)
                         autocleanse(streamsrcfile)
-                        return status == 0:
+                        if status == 0:
                             return 0
                         else:
                             return 1
