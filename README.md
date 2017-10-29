@@ -10,12 +10,24 @@ ProxLoadMe was created for those people:
 
 * Install Python3 via your package manager
 * Download or Clone this Repo
+* Install selenium and requests via pip  
+
+```
+python3 -m pip install selenium
+python3 -m pip install requests
+```
 
 ### Requirements Windows
 
 * Download and Install Python3 from [Python Downloadpage](https://www.python.org/downloads/release/python-360/)  
 add Python3 to PATH during installation and disable Path-Limit
 * Download or Clone this Repo
+* Install selenium and requests via pip
+
+```
+python -m pip install selenium
+python -m pip install requests
+```
 
 ## How to use
 
