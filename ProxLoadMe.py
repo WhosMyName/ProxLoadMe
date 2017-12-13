@@ -107,10 +107,11 @@ def init_preps():
     infofile = CWD + aninum + ".html"
     get_file(infofile, inputurl)
     name = None
+    log(["URL:\t", inputurl])
     with open(infofile, "r", encoding="UTF-8") as ifile:
         for line in ifile:
             if "<title>" in line and "Just a moment" not in line:
-                name = line.split(" - ")[0].strip("<title>").replace("?", "").replace("'", "").replace("!", "").replace(":", " -")
+                name = line.split(" - ")[0].strip("<title>").replace("?", "").replace("'", "").replace("!", "").replace(":", " -").replace("&amp;", "&")
     if name == None:
         log(["Could not parse Anime-Name"])
         name = aninum
