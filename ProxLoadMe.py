@@ -220,6 +220,46 @@ def parse_file(hoster, name, currthreads, iterator):
                         return 0#0
                     else:
                         return 1
+
+        elif "streamcloud" in hoster:#fix
+            print("Streamcloud")
+            autocleanse(streamsrcfile)
+            ses = requests.Session()
+            init_req = ses.get(hoster, headers=HEADERS)
+            with open(streamsrcfile,"w+") as tempf:
+                tempf.write(init_req.content.decode("utf-8"))
+                tempf.seek(0)
+                print("Searching for fname")
+                for line in tempf:
+                    if "<input type=\"hidden\" name=\"fname\" value=\"" in line:
+                        fname = line.split("value=\"")[1].split("\">")[0]
+
+            _id = hoster.split("eu/")[1].split("/")[0]
+            print("Sent first Request")
+            datapayload = {"op":"download1", "usr_login":"", "id":_id, "fname":fname, "referer":"", "hash":""}
+            print(init_req.cookies)
+            time.sleep(11)
+            req = ses.post(hoster, data=datapayload, cookies=init_req.cookies, headers=HEADERS)
+            print("Sent 2nd Request")
+            with open("streamcloud.html", "w") as fifi:
+                fifi.write(req.content.decode("utf-8"))
+            with open(streamsrcfile,"w+") as tempf:
+                tempf.write(req.content.decode("utf-8"))
+                tempf.seek(0)
+                print("Searching for Filesource")
+                for line in tempf:
+                    line = str(line)
+                    if "file:" in line:
+                        print("jnfdfvstzrt", line)
+                        streamurl = str(line.split("file: \"")[1].split("\"")[0])
+                        episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + ".mp4"
+                        print("Streamurl:", streamurl)
+                        status = get_file(str(episode), streamurl, 0, 1)
+                        autocleanse(streamsrcfile)
+                        if status == 0:
+                            return 0
+                        else:
+                            return 1
         
         elif "mp4upload" in hoster:
             print("MP4Up")
@@ -268,46 +308,6 @@ def parse_file(hoster, name, currthreads, iterator):
                         autocleanse(streamsrcfile)
                         if status == 0:
                             return 0#0
-                        else:
-                            return 1
-        
-        elif "streamcloud" in hoster:#fix
-            print("Streamcloud")
-            autocleanse(streamsrcfile)
-            ses = requests.Session()
-            init_req = ses.get(hoster, headers=HEADERS)
-            with open(streamsrcfile,"w+") as tempf:
-                tempf.write(init_req.content.decode("utf-8"))
-                tempf.seek(0)
-                print("Searching for fname")
-                for line in tempf:
-                    if "<input type=\"hidden\" name=\"fname\" value=\"" in line:
-                        fname = line.split("value=\"")[1].split("\">")[0]
-
-            _id = hoster.split("eu/")[1].split("/")[0]
-            print("Sent first Request")
-            datapayload = {"op":"download1", "usr_login":"", "id":_id, "fname":fname, "referer":"", "hash":""}
-            print(init_req.cookies)
-            time.sleep(11)
-            req = ses.post(hoster, data=datapayload, cookies=init_req.cookies, headers=HEADERS)
-            print("Sent 2nd Request")
-            with open("streamcloud.html", "w") as fifi:
-                fifi.write(req.content.decode("utf-8"))
-            with open(streamsrcfile,"w+") as tempf:
-                tempf.write(req.content.decode("utf-8"))
-                tempf.seek(0)
-                print("Searching for Filesource")
-                for line in tempf:
-                    line = str(line)
-                    if "file:" in line:
-                        print("jnfdfvstzrt", line)
-                        streamurl = str(line.split("file: \"")[1].split("\"")[0])
-                        episode = os.getcwd() + SLASH + str(name) + "_Episode_" + iterator + ".mp4"
-                        print("Streamurl:", streamurl)
-                        status = get_file(str(episode), streamurl, 0, 1)
-                        autocleanse(streamsrcfile)
-                        if status == 0:
-                            return 0
                         else:
                             return 1
     return 1
