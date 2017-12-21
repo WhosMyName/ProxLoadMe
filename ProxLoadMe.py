@@ -149,13 +149,14 @@ def retrieve_source(episodeurl, name, iterator, currthreads):
         for line in esrc:
             if  "var streams" in line:
                 print(line.split("[{")[1].split("}];")[0].split("},{"))
+                log([line.split("[{")[1].split("}];")[0].split("},{")])
                 for streamhoster in line.split("[{")[1].split("}];")[0].split("},{"):
                     elem = streamhoster.split("code\":\"")[1].split("\",\"img\"")[0].replace(r"\/", "/").replace("//", "http://").replace("\":\"", "\",\"").split("\",\"")
                     print("Process", iterator + ":\n", elem)
                     if "http" in elem[8]:
-                        baseurl = str(elem[8]).replace("http:", "").replace("//", "")
+                        baseurl = str(elem[8])
                         code = str(elem[0])
-                        url = "http://" + baseurl.replace("#", code)
+                        url = baseurl.replace("#", code)
                         print(url)
                         streamhosterlist.append(url)
     autocleanse(episodesrc)
@@ -169,18 +170,20 @@ def retrieve_source(episodeurl, name, iterator, currthreads):
                 print("Process", iterator, "Valid Hoster", hoster, "in URL:", url)
         if found == False:
             streamhosterlist.remove(url)
-            print("Debug Messge: Unknown Hoster ", url)
+            print("Debug Message: Unknown Hoster ", url)
             log(["Debug Message: Unknown Hoster", str(url)])    
 
     for hoster in streamhosterlist:
         hoster = str(hoster)
         print("Process", iterator, "Hoster:", hoster, "\n\n")
         switcher = parse_file(hoster, name, currthreads, iterator)
-        print("Process", iterator, "Evaluation:", switcher)
+        log(["Process", iterator, "Evaluation:", switcher])
         if switcher == 0:
             currthreads.value = currthreads.value - 1
             return
-        currthreads.value = currthreads.value - 1
+        log(["Failed to download Episode", iterator, "from", hoster])
+    currthreads.value = currthreads.value - 1
+    log(["Failed to download Episode", iterator, "from all Hoster"])
     return
 
 def parse_file(hoster, name, currthreads, iterator):
@@ -191,7 +194,7 @@ def parse_file(hoster, name, currthreads, iterator):
     try:
         driver.get(hoster)
     except Exception as exep:
-        print("Exception:", exep, "\nfor Hoster:", hoster)
+        print("Exception:\n", exep, "\nfor Hoster:", hoster)
         log(["Exception:\n", str(exep), "\nfor Hoster:", str(hoster)])
         driver.close()
         return 1
