@@ -151,21 +151,21 @@ def retrieve_source(episodeurl, name, iterator, currthreads):
                 print(line.split("[{")[1].split("}];")[0].split("},{"))
                 log([line.split("[{")[1].split("}];")[0].split("},{")])
                 for streamhoster in line.split("[{")[1].split("}];")[0].split("},{"):
-                    elem = streamhoster.split("code\":\"")[1].split("\",\"img\"")[0].replace(r"\/", "/").replace("//", "http://").replace("\":\"", "\",\"").split("\",\"")
+                    elem = streamhoster.split("code\":\"")[1].split("\",\"img\"")[0].replace(r"\/", "/").replace("//","").replace("\":\"", "\",\"").split("\",\"")
                     print("Process", iterator + ":\n", elem)
-                    if "http" in elem[8]:
-                        baseurl = str(elem[8])
-                        code = str(elem[0])
-                        url = baseurl.replace("#", code)
-                        print(url)
-                        streamhosterlist.append(url)
+                    baseurl = str(elem[8])
+                    code = str(elem[0])
+                    if not "http" in baseurl:
+                        url = "http://" + baseurl.replace("#", code)
+                    print(url)
+                    streamhosterlist.append(url)
     autocleanse(episodesrc)
 
     for url in streamhosterlist:
         found = False
         print(url)
         for hoster in SUPPORTEDHOSTER:
-            if hoster in url.split("://")[1].split("/")[0]:
+            if hoster in url:
                 found = True
                 print("Process", iterator, "Valid Hoster", hoster, "in URL:", url)
         if found == False:
