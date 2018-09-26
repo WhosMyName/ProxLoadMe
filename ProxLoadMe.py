@@ -4,7 +4,6 @@ import os
 import threading
 import multiprocessing
 import time
-import tempfile
 import requests
 from datetime import datetime
 from shutil import which
