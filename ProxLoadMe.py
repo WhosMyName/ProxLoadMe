@@ -5,12 +5,13 @@ import sys
 import time
 import logging
 import re
-from datetime import datetime
-
-from configparser import ConfigParser
-from bs4 import BeautifulSoup, SoupStrainer
-import requests
 import concurrent.futures as cf 
+from datetime import datetime
+from configparser import ConfigParser
+from re import search
+
+import requests
+from bs4 import BeautifulSoup, SoupStrainer
 
 # SEARCH FOR # TO FIND ALL COMMENTS
 
@@ -26,7 +27,7 @@ else:
     SLASH = "/"
 CWD = os.path.dirname(os.path.realpath(__file__)) + SLASH
 
-LOGGER = logging.getLogger('udli.main')
+LOGGER = logging.getLogger('plme.main')
 LOG_FORMAT = "%(asctime)-15s | %(levelname)s | %(module)s %(name)s %(process)d %(thread)d | %(funcName)20s() - Line %(lineno)d | %(message)s"
 LOGGER.setLevel(logging.DEBUG)
 STRMHDLR = logging.StreamHandler(stream=sys.stdout)
@@ -42,44 +43,33 @@ LIMIT = 5
 SESSION = requests.Session()
 EXECUTOR = cf.ThreadPoolExecutor(LIMIT)
 
-def get_file(srcfile, srcurl, counter=0, ftype=0):  # ftype indicates if video or not
+def ask_overwrite(filename):
+    """ asks if a file sould be overwritten """
+    retval = input(f"The file {filename} already exists...\nSould it be overwritten?\n[y/n]")
+    if retval == "n":
+        return False
+    return True
+
+def download_file(srcfile, srcurl):
     """Function to Downloadad and verify downloaded Files"""
-    if counter == 5:
-        LOGGER.info("Could not download File: {srcfile} in 5 attempts")
-        return 1
-    counter = counter + 1
-    if not os.path.isfile(srcfile):
-        time.sleep(5)
+        if os.path.exists(srcfile):
+            if not ask_overwrite(srcfile):
+                return False
         LOGGER.info(f"Downloading {srcurl} as {srcfile}")
-        with open(srcfile, "wb") as fifo:  # open in binary write mode
-            response = requests.get(srcurl, headers=HEADERS)  # get request
-            # check against actual filesize
-            LOGGER.debug(f"\n\n\n {response.headers} \n\n\n")
-            fifo.write(response.content)  # write to file
-        if int(str(os.path.getsize(srcfile)).strip(
-                "L")) < 25000000 and ftype:  # Assumes Error in Download and redownlads File
-            LOGGER.info("Redownloading {srcurl} as {srcfile}")
-            return get_file(srcfile, srcurl, counter)
-        else:  # Assume correct Filedownload
-            return 0
-    else:
-        if int(str(os.path.getsize(srcfile)).strip(
-                "L")) < 25000000 and ftype:  # Assumes Error in Download and redownlads File
-            LOGGER.info(f"{srcfile} was already downloaded but the filesize does not seem to fit -> Redownl0ading")
-            return get_file(srcfile, srcurl, 0)
-        else:  # Assume correct Filedownload
-            LOGGER.info("File was downloaded correctly on a previous run")
-            return 0
+        with open(srcfile, "wb") as fifo:#open in binary write mode
+            response = SESSION.get(srcurl)#get request
+            fifo.write(response.content)#write to file
+        return True
 
 def init_preps():
-    """Function to initiate the Download Process"""
+    """Function to log in and initiate the Download Process"""
 
     config = ConfigParser()
     try:
         config.read(AUTHFILE)
         user = config["LOGIN"]["USER"]
         passwd = config["LOGIN"]["PASS"]
-        #LOGGER.info("%s, %s" % (user, passwd))
+        #LOGGER.info(f"{user}|{passwd}")
         resp = SESSION.get("https://proxer.me")
         strainer = SoupStrainer(id="loginBubble")
         soup = BeautifulSoup(resp.content, "html.parser", parse_only=strainer)
@@ -100,6 +90,8 @@ def init_preps():
         float(
             input("Please enter the Number of the last Episode you want: ") or 1))
 
+    if lastepisode <= firstepisode:
+        lastepisode = firstepisode
     resp = SESSION.get(inputurl)
     strainer = SoupStrainer(class_="fn")
     soup = BeautifulSoup(resp.content, "html.parser", parse_only=strainer)
@@ -110,40 +102,44 @@ def init_preps():
         os.mkdir(animedir)
 
     os.chdir(animedir)
-    inputurl = inputurl.replace("info", "watch")
+    match = search("#.*", inputurl)
+    if match is None:
+        match = ""
+    else:
+        match = match[0]
+    inputurl = inputurl.strip(match).replace("info", "watch")
     if inputurl[-1:] != "/":
         inputurl = f"{inputurl}/"
 
     ftrlst = []
 
-    for iterator in range(firstepisode, lastepisode + 1):
-        episodeurl = f"{inputurl}{iterator}/engsub"
+    for episodenum in range(firstepisode, lastepisode + 1):
+        episodeurl = f"{inputurl}{episodenum}/engsub"
         LOGGER.debug(episodeurl)
-        LOGGER.info(f"Creating Worker for Episode {iterator}")
+        LOGGER.info(f"Creating Worker for Episode {episodenum}")
         
-        ftrlst.append(EXECUTOR.submit(retrieve_source, episodeurl, name, iterator))
+        ftrlst.append(EXECUTOR.submit(retrieve_source, episodeurl, name, episodenum))
 
     for future in cf.as_completed(ftrlst):
         try:
             video = future.done()
-            LOGGER.info(f"{future} produced return {video}")
+            LOGGER.info(f"Worker for Episode {episodenum} returned: {video}")
         except Exception as excp:
             LOGGER.exception(
-                "%s has thrown Exception:\n%s", supposed_video, excp)
+                f"{supposed_video} has thrown Exception:\n{excp}")
 
 
 def retrieve_source(episodeurl, name, episodenum):
     """Function to make all the Magic happen"""
     #LOGGER.info(f"{episodeurl}, {name}, {episodenum}")
     streamhosterurl = None
-    resp = SESSION.get(episodeurl)
+    resp = SESSION.get(episodeurl, timeout=30)
 
     for line in resp.text.split("\n"):
         if "var streams" in line:
             #LOGGER.info(line.split("[{")[1].split("}];")[0].split("},{"))
             for streamhoster in line.split("[{")[1].split("}];")[0].split("},{"):
-                elem = streamhoster.split("code\":\"")[1].split("\",\"img\"")[0].replace(
-                    r"\/", "/").replace("//", "").replace("\":\"", "\",\"").split("\",\"")
+                elem = streamhoster.split("code\":\"")[1].split("\",\"img\"")[0].replace("//", "").replace(r"\/", "/").replace("\":\"", "\",\"").split("\",\"")
                 code = str(elem[0])
                 baseurl = f"{elem[8]}".replace("#", code)
                 if "http" not in baseurl:
@@ -153,18 +149,19 @@ def retrieve_source(episodeurl, name, episodenum):
                     streamhosterurl = baseurl
     #LOGGER.info(f"Streamhoster: {streamhosterurl}")
 
-    resp2 = SESSION.get(streamhosterurl)
+    resp2 = SESSION.get(streamhosterurl, timeout=30)
     for line in resp2.text.split("\n"):
         if "\"http" and ".mp4\"" in line:
             streamurl = f"http{line.split('http')[1].split('.mp4')[0]}.mp4"
             episodename = f"{os.getcwd()}{SLASH}{name}_Episode_{episodenum}.mp4"
             #LOGGER.info(f"Streamurl: {streamurl}")
-            get_file(episodename, streamurl, 0, 1)
-
+            if streamurl == "": # error check for captcha
+                return False
+            if not download_file(episodename, streamurl):
+                return False # error check for file previously downloaded/failed ?
 
 def __main__():
     """MAIN"""
-    #os.umask(0)
     init_preps()
 
 if __name__ == "__main__":
