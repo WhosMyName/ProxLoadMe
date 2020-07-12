@@ -52,14 +52,14 @@ def ask_overwrite(filename):
 
 def download_file(srcfile, srcurl):
     """Function to Downloadad and verify downloaded Files"""
-        if os.path.exists(srcfile):
-            if not ask_overwrite(srcfile):
-                return False
-        LOGGER.info(f"Downloading {srcurl} as {srcfile}")
-        with open(srcfile, "wb") as fifo:#open in binary write mode
-            response = SESSION.get(srcurl)#get request
-            fifo.write(response.content)#write to file
-        return True
+    if os.path.exists(srcfile):
+        if not ask_overwrite(srcfile):
+            return False
+    LOGGER.info(f"Downloading {srcurl} as {srcfile}")
+    with open(srcfile, "wb") as fifo:#open in binary write mode
+        response = SESSION.get(srcurl)#get request
+        fifo.write(response.content)#write to file
+    return True
 
 def init_preps():
     """Function to log in and initiate the Download Process"""
