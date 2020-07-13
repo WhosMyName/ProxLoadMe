@@ -78,6 +78,8 @@ def init_preps():
         resp2 = SESSION.post(url, data=creds)
     except Exception as excp:
         LOGGER.exception(excp)
+        LOGGER.warning(f"Something went wrong during Login!\nExiting...")
+        exit(1)
 
     LOGGER.info("Recommended URL-Format would be: http://proxer.me/info/277/\n")
     inputurl = str(
