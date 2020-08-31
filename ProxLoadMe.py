@@ -13,6 +13,7 @@ from re import search
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 import tqdm
+from cloudscraper import CloudScraper
 
 AUTHFILE = "login.auth"
 
@@ -72,7 +73,8 @@ def init_preps():
         user = config["LOGIN"]["USER"]
         passwd = config["LOGIN"]["PASS"]
         #LOGGER.info(f"{user}|{passwd}")
-        resp = SESSION.get("https://proxer.me") # grab the main page
+        scraper = CloudScraper() # use Cloudscraper to bypass Cloudflares Redirection Page
+        resp = scraper.get("https://proxer.me") # grab the main page
         strainer = SoupStrainer(id="loginBubble") # restrict to login related html using a strainer
         soup = BeautifulSoup(resp.content, "html.parser", parse_only=strainer) # use the strainer to restrict parsing
         url = soup.find("form")["action"] # grab the login url
@@ -84,8 +86,7 @@ def init_preps():
         exit(1)
 
     LOGGER.info("Recommended URL-Format would be: http://proxer.me/info/277/\n")
-    inputurl = str(
-        input("Please enter the URL of the Anime you want to download: "))
+    inputurl = input("Please enter the URL of the Anime you want to download: ")
     #inputurl = "https://proxer.me/info/6587"#cm
     firstepisode = int(
         input("Please enter the Number of the first Episode you want: ") or 1)
